@@ -45,6 +45,7 @@ set scrolloff=3
 set backspace=indent,eol,start
 set matchpairs+=<:> " use % to jump between pairs
 runtime! macros/matchit.vim
+set mouse=a
 
 " Move up/down editor lines
 nnoremap j gj
@@ -104,3 +105,38 @@ let g:solarized_termtrans=1
 " put https://raw.github.com/altercation/vim-colors-solarized/master/colors/solarized.vim
 " in ~/.vim/colors/ and uncomment:
 " colorscheme solarized
+
+" Correctly map the backspace key to what you expect
+set t_kb=^?
+fixdel
+
+" Precise moves without mouse
+let LABEL = ["a","b","c",
+\"d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s",
+\"t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I",
+\"J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y",
+\"Z","1","2","3","4","5","6","7","8","9","0"]
+function! GoTo(range)
+    normal! Hmt
+    for i in range(0,a:range)
+        exe 'normal! Wr' . g:LABEL[i%len(g:LABEL)]
+    endfor
+    normal! 'tzt
+    echo "Index?"
+    redraw
+    let label=nr2char(getchar())
+    normal! u'tzt
+    for i in range(0,a:range)
+        exe 'normal! Wr' . (1+i/len(g:LABEL))
+    endfor
+    normal! 'tzt
+    echo "Number?"
+    redraw
+    let offset=getchar()
+    let offset=(49 <= offset && offset <= 57) ? offset-48 : 1
+    normal! u'tzt
+    let index=index(g:LABEL,label)
+    exe 'normal! ' . ((offset-1)*len(g:LABEL)+index+1) . 'W'
+endfu
+nnoremap <TAB> :call GoTo(248)<CR>
+
